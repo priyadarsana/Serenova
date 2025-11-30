@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 interface ChatTurn {
   role: 'user' | 'assistant'
@@ -43,7 +44,7 @@ export default function CheckInChat() {
   const analyzeConversation = async (finalTurns: ChatTurn[]) => {
     setIsAnalyzing(true)
     try {
-      const res = await fetch('http://localhost:8001/api/intake/summary', {
+      const res = await fetch(`${API_URL}/api/intake/summary`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,10 +53,10 @@ export default function CheckInChat() {
         })
       })
       const data = await res.json()
-      
+
       // Store intake summary for AI chatbot
       sessionStorage.setItem('intakeSummary', JSON.stringify(data))
-      
+
       // Navigate to handover screen
       nav('/check-in/handover')
     } catch (error) {
@@ -69,33 +70,33 @@ export default function CheckInChat() {
   const hasEnoughInfo = (newTurns: ChatTurn[]): boolean => {
     const userMessages = newTurns.filter(t => t.role === 'user')
     const newUserCount = userMessages.length
-    
+
     // Must have at least MIN_USER_MESSAGES
     if (newUserCount < MIN_USER_MESSAGES) return false
-    
+
     // Auto-stop at MAX_USER_MESSAGES
     if (newUserCount >= MAX_USER_MESSAGES) return true
-    
+
     // After minimum messages, check if user is providing substance
     const lastUserMessage = userMessages[userMessages.length - 1]?.text || ''
     const wordCount = lastUserMessage.trim().split(/\s+/).length
-    
+
     // If user gives detailed responses (>15 words) after 3+ messages, we likely have enough
     if (newUserCount >= MIN_USER_MESSAGES && wordCount > 15) {
       return true
     }
-    
+
     // Check if conversation covers key areas
     const allUserText = userMessages.map(m => m.text.toLowerCase()).join(' ')
     const hasEmotionalContent = /feel|feeling|emotion|mood|sad|happy|anxious|stressed|worried|overwhelmed|tired|energy|sleep/i.test(allUserText)
     const hasDurationContent = /today|yesterday|week|month|days|always|lately|recently|long/i.test(allUserText)
     const hasCauseContent = /because|since|after|when|triggered|started|happened/i.test(allUserText)
-    
+
     // If we have 4+ messages and they cover emotions + context, that's enough
     if (newUserCount >= 4 && hasEmotionalContent && (hasDurationContent || hasCauseContent)) {
       return true
     }
-    
+
     return false
   }
 
@@ -118,9 +119,9 @@ export default function CheckInChat() {
       const nextQuestionIndex = newUserCount
       if (nextQuestionIndex < QUESTIONS.length) {
         setTimeout(() => {
-          setTurns(prev => [...prev, { 
-            role: 'assistant', 
-            text: QUESTIONS[nextQuestionIndex] 
+          setTurns(prev => [...prev, {
+            role: 'assistant',
+            text: QUESTIONS[nextQuestionIndex]
           }])
         }, 800)
       } else {
@@ -170,17 +171,16 @@ export default function CheckInChat() {
             className={`flex ${turn.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] p-3 rounded-2xl ${
-                turn.role === 'user'
+              className={`max-w-[80%] p-3 rounded-2xl ${turn.role === 'user'
                   ? 'bg-[var(--color-primary)] text-white'
                   : 'bg-slate-100 text-slate-800'
-              }`}
+                }`}
             >
               {turn.text}
             </div>
           </motion.div>
         ))}
-        
+
         {isAnalyzing && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -196,7 +196,7 @@ export default function CheckInChat() {
             </div>
           </motion.div>
         )}
-        
+
         <div ref={chatEndRef} />
       </AnimatedCard>
 
@@ -226,7 +226,7 @@ export default function CheckInChat() {
             </PrimaryButton>
           )}
         </div>
-        
+
         {userMessageCount < MIN_USER_MESSAGES && (
           <p className="text-xs text-slate-400 mt-2 text-center">
             At least {MIN_USER_MESSAGES - userMessageCount} more {MIN_USER_MESSAGES - userMessageCount === 1 ? 'message' : 'messages'} needed

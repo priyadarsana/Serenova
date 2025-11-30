@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { API_URL } from '../config'
 
 interface AssessmentScore {
   date: string
@@ -89,7 +90,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const createAnonymousUser = async () => {
     try {
-      const res = await fetch('http://localhost:8001/api/users/create', {
+      const res = await fetch(`${API_URL}/api/users/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ consentGiven: false })
@@ -107,7 +108,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const loadUserData = async (uid: string) => {
     try {
-      const res = await fetch(`http://localhost:8001/api/users/profile/${uid}`)
+      const res = await fetch(`${API_URL}/api/users/profile/${uid}`)
       const data = await res.json()
       setUserData(data)
     } catch (error) {
@@ -125,7 +126,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     consentGiven?: boolean
   }) => {
     try {
-      const res = await fetch('http://localhost:8001/api/users/create', {
+      const res = await fetch(`${API_URL}/api/users/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -148,7 +149,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }) => {
     if (!userId) return
     try {
-      await fetch(`http://localhost:8001/api/users/profile/${userId}`, {
+      await fetch(`${API_URL}/api/users/profile/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -169,7 +170,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }) => {
     if (!userId) return
     try {
-      await fetch(`http://localhost:8001/api/users/assessment/${userId}`, {
+      await fetch(`${API_URL}/api/users/assessment/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assessment)
@@ -184,7 +185,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const linkConversation = async (sessionId: string) => {
     if (!userId) return
     try {
-      await fetch(`http://localhost:8001/api/users/conversation/${userId}?session_id=${sessionId}`, {
+      await fetch(`${API_URL}/api/users/conversation/${userId}?session_id=${sessionId}`, {
         method: 'POST'
       })
       await loadUserData(userId)
@@ -201,7 +202,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }) => {
     if (!userId) return
     try {
-      await fetch(`http://localhost:8001/api/users/preferences/${userId}`, {
+      await fetch(`${API_URL}/api/users/preferences/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prefs)

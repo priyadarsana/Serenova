@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 const prompts = ['Work', 'Studies', 'Relationships', 'Health']
 
-export default function CheckInText(){
+export default function CheckInText() {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const nav = useNavigate()
@@ -17,10 +18,10 @@ export default function CheckInText(){
     setLoading(true)
     try {
       const payload = { userId: 'demo', text, timestamp: new Date().toISOString() }
-      const res = await fetch('http://localhost:8001/api/analyze/text', { 
-        method: 'POST', 
-        headers: {'Content-Type':'application/json'}, 
-        body: JSON.stringify(payload) 
+      const res = await fetch(`${API_URL}/api/analyze/text`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       })
       const data = await res.json()
       // Store result in sessionStorage to display on results page
@@ -45,10 +46,10 @@ export default function CheckInText(){
       </motion.h2>
 
       <AnimatedCard className="p-0 overflow-hidden">
-        <textarea 
-          value={text} 
-          onChange={e=>setText(e.target.value)} 
-          placeholder="You can write about your day, worries, or anything at all..." 
+        <textarea
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder="You can write about your day, worries, or anything at all..."
           className="w-full min-h-[200px] p-4 bg-transparent focus:outline-none resize-none"
         />
       </AnimatedCard>

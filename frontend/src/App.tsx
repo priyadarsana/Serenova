@@ -21,12 +21,15 @@ import ConversationHistory from './pages/ConversationHistory'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import VoiceStressAnalysis from './pages/VoiceStressAnalysis'
+import { API_URL } from './config'
+
 
 export default function App(){
   const location = useLocation()
   const isLandingPage = location.pathname === '/'
   const isAuthPage = location.pathname === '/auth'
   const isAuthenticated = !!localStorage.getItem('authToken')
+
 
   return (
     <div className="min-h-screen text-slate-800">

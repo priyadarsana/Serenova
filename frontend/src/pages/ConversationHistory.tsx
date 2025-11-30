@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 interface Conversation {
   sessionId: string
@@ -44,21 +45,21 @@ export default function ConversationHistory() {
     try {
       const token = localStorage.getItem('authToken')
       const userId = localStorage.getItem('userId')
-      
+
       console.log('🔍 Loading conversations...', { token, userId })
-      
+
       if (!token) {
         console.error('No auth token found')
         nav('/auth')
         return
       }
-      
-      const res = await fetch('http://localhost:8001/api/conversations/list', {
+
+      const res = await fetch(`${API_URL}/api/conversations/list`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           nav('/auth')
@@ -66,12 +67,12 @@ export default function ConversationHistory() {
         }
         throw new Error('Failed to load conversations')
       }
-      
+
       const data = await res.json()
       console.log('📋 Loaded conversations:', data)
-      
+
       setConversations(data.conversations)
-      
+
       // Check for token mismatch issue
       if (token && userId && token !== userId) {
         console.warn('⚠️ TOKEN MISMATCH DETECTED!')
@@ -94,13 +95,13 @@ export default function ConversationHistory() {
         nav('/auth')
         return
       }
-      
-      const res = await fetch(`http://localhost:8001/api/conversations/${sessionId}`, {
+
+      const res = await fetch(`${API_URL}/api/conversations/${sessionId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      
+
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
           alert('You do not have access to this conversation')
@@ -108,10 +109,10 @@ export default function ConversationHistory() {
         }
         throw new Error('Failed to load conversation')
       }
-      
+
       const data = await res.json()
       setSelectedConv(data)
-      
+
       // Auto-analyze
       analyzeConversation(sessionId)
     } catch (error) {
@@ -123,21 +124,21 @@ export default function ConversationHistory() {
     try {
       const token = localStorage.getItem('authToken')
       if (!token) return
-      
-      const res = await fetch(`http://localhost:8001/api/conversations/analyze/${sessionId}`, {
+
+      const res = await fetch(`${API_URL}/api/conversations/analyze/${sessionId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      
+
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
           return
         }
         throw new Error('Failed to analyze')
       }
-      
+
       const data = await res.json()
       setAnalysis(data)
     } catch (error) {
@@ -157,7 +158,7 @@ export default function ConversationHistory() {
         return
       }
 
-      const res = await fetch(`http://localhost:8001/api/conversations/${sessionId}`, {
+      const res = await fetch(`${API_URL}/api/conversations/${sessionId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -174,7 +175,7 @@ export default function ConversationHistory() {
 
       // Remove from local state
       setConversations(prev => prev.filter(c => c.sessionId !== sessionId))
-      
+
       // Clear selected conversation if this was the one
       if (selectedConv?.sessionId === sessionId) {
         setSelectedConv(null)
@@ -217,7 +218,7 @@ export default function ConversationHistory() {
           <div className="md:col-span-1">
             <AnimatedCard className="p-4">
               <h2 className="font-semibold text-lg mb-4">Your Conversations</h2>
-              
+
               {conversations.length === 0 ? (
                 <p className="text-gray-500 text-sm">No conversations yet. Start chatting with Aurora!</p>
               ) : (
@@ -225,11 +226,10 @@ export default function ConversationHistory() {
                   {conversations.map((conv) => (
                     <div
                       key={conv.sessionId}
-                      className={`relative w-full p-3 rounded-lg border-2 transition-all ${
-                        selectedConv?.sessionId === conv.sessionId
+                      className={`relative w-full p-3 rounded-lg border-2 transition-all ${selectedConv?.sessionId === conv.sessionId
                           ? 'border-purple-400 bg-purple-50'
                           : 'border-gray-200 hover:border-purple-300'
-                      }`}
+                        }`}
                     >
                       <button
                         onClick={() => viewConversation(conv.sessionId)}
@@ -241,11 +241,10 @@ export default function ConversationHistory() {
                         <div className="text-xs text-gray-600">
                           {conv.messageCount} messages • {conv.mainEmotion}
                         </div>
-                        <div className={`text-xs mt-1 inline-block px-2 py-0.5 rounded ${
-                          conv.riskLevel === 'high' ? 'bg-red-100 text-red-700' :
-                          conv.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
+                        <div className={`text-xs mt-1 inline-block px-2 py-0.5 rounded ${conv.riskLevel === 'high' ? 'bg-red-100 text-red-700' :
+                            conv.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-green-100 text-green-700'
+                          }`}>
                           {conv.riskLevel} risk
                         </div>
                       </button>
@@ -278,14 +277,13 @@ export default function ConversationHistory() {
                 {analysis && (
                   <AnimatedCard className="p-6">
                     <h3 className="font-bold text-xl mb-4">📊 Conversation Analysis</h3>
-                    
+
                     <div className="mb-6">
                       <div className="text-sm text-gray-600 mb-2">Overall Stress Level</div>
-                      <div className={`inline-block px-4 py-2 rounded-lg font-semibold ${
-                        analysis.overallStressLevel === 'High' ? 'bg-red-100 text-red-700' :
-                        analysis.overallStressLevel === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
+                      <div className={`inline-block px-4 py-2 rounded-lg font-semibold ${analysis.overallStressLevel === 'High' ? 'bg-red-100 text-red-700' :
+                          analysis.overallStressLevel === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                        }`}>
                         {analysis.overallStressLevel}
                       </div>
                     </div>
@@ -345,11 +343,10 @@ export default function ConversationHistory() {
                     {selectedConv.messages.map((msg, i) => (
                       <div
                         key={i}
-                        className={`p-3 rounded-lg ${
-                          msg.role === 'user'
+                        className={`p-3 rounded-lg ${msg.role === 'user'
                             ? 'bg-purple-100 ml-8'
                             : 'bg-gray-100 mr-8'
-                        }`}
+                          }`}
                       >
                         <div className="text-xs font-semibold text-gray-600 mb-1">
                           {msg.role === 'user' ? 'You' : 'Aurora'}

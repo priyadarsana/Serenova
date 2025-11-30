@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 interface AssessmentData {
   needImprovement: string
@@ -51,12 +52,12 @@ export default function MentalHealthAssessment() {
   const handleSubmit = async () => {
     try {
       const userId = localStorage.getItem('userId')
-      
+
       // Save assessment to localStorage
       localStorage.setItem('mentalHealthAssessment', JSON.stringify(formData))
-      
+
       // Save to backend
-      const response = await fetch('http://localhost:8001/api/assessment/save', {
+      const response = await fetch(`${API_URL}/api/assessment/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ export default function MentalHealthAssessment() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Mental Health Assessment</h1>
           <p className="text-gray-600">Help us understand your needs better to provide personalized support</p>
-          
+
           {/* Progress Bar */}
           <div className="mt-6">
             <div className="flex justify-between mb-2">
@@ -425,11 +426,10 @@ export default function MentalHealthAssessment() {
               type="button"
               onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
               disabled={currentStep === 1}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                currentStep === 1
+              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${currentStep === 1
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+                }`}
             >
               ← Previous
             </button>

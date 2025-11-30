@@ -3,6 +3,7 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 const list = [
   { id: 'breathing-3m', title: '3-minute breathing', duration: 3, category: 'Breathing', icon: '🫁' },
@@ -26,7 +27,7 @@ function Breathing3Min() {
       interval = setInterval(() => {
         setTimeLeft((time) => {
           const newTime = time - 1
-          
+
           // Update phases based on time
           if (newTime === 120) setPhase('minute2')
           else if (newTime === 60) setPhase('minute3')
@@ -34,7 +35,7 @@ function Breathing3Min() {
             setPhase('complete')
             setIsActive(false)
           }
-          
+
           return newTime
         })
       }, 1000)
@@ -344,7 +345,7 @@ function Grounding5Senses() {
       interval = setInterval(() => {
         setTimeLeft((time) => {
           const newTime = time - 1
-          
+
           // Update phases based on time remaining - each minute
           if (newTime === 120) setPhase('body') // Minute 2 starts at 2:00
           else if (newTime === 60) setPhase('breath') // Minute 3 starts at 1:00
@@ -352,7 +353,7 @@ function Grounding5Senses() {
             setPhase('complete')
             setIsActive(false)
           }
-          
+
           return newTime
         })
       }, 1000)
@@ -717,7 +718,7 @@ function GratitudeJournal() {
 
   const handleComplete = async () => {
     setIsSaving(true)
-    
+
     try {
       const token = localStorage.getItem('authToken')
       if (!token) {
@@ -728,7 +729,7 @@ function GratitudeJournal() {
       }
 
       // Save to backend
-      const response = await fetch('http://localhost:8001/api/gratitude/save', {
+      const response = await fetch(`${API_URL}/api/gratitude/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -844,19 +845,17 @@ function GratitudeJournal() {
             {[1, 2, 3].map((num) => (
               <div key={num} className="flex items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${
-                    step >= num
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${step >= num
                       ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
                       : 'bg-white/60 text-gray-400'
-                  }`}
+                    }`}
                 >
                   {num}
                 </div>
                 {num < 3 && (
                   <div
-                    className={`w-16 h-1 mx-1 rounded transition-colors ${
-                      step > num ? 'bg-amber-400' : 'bg-white/60'
-                    }`}
+                    className={`w-16 h-1 mx-1 rounded transition-colors ${step > num ? 'bg-amber-400' : 'bg-white/60'
+                      }`}
                   />
                 )}
               </div>
@@ -915,7 +914,7 @@ function GratitudeJournal() {
   )
 }
 
-export default function Activities(){
+export default function Activities() {
   const [activeCategory, setActiveCategory] = useState('All')
   const shouldReduceMotion = useReducedMotion()
   const filtered = activeCategory === 'All' ? list : list.filter(a => a.category === activeCategory)
@@ -1045,11 +1044,10 @@ export default function Activities(){
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`pixel-button px-6 py-2 text-base font-medium transition-all pixel-text ${
-                    activeCategory === cat
+                  className={`pixel-button px-6 py-2 text-base font-medium transition-all pixel-text ${activeCategory === cat
                       ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>

@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
 import { useUser } from '../contexts/UserContext'
+import { API_URL } from '../config'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -36,7 +37,7 @@ export default function SupportBot() {
     riskLevel: 'low'
   })
   const [groqAvailable, setGroqAvailable] = useState<boolean | null>(null)
-  
+
   const { userId, linkConversation } = useUser()
   const nav = useNavigate()
   const shouldReduceMotion = useReducedMotion()
@@ -46,12 +47,12 @@ export default function SupportBot() {
   useEffect(() => {
     // Load user-specific chat history
     const currentUserId = localStorage.getItem('userId')
-    
+
     if (currentUserId) {
       // Load chat history for this specific user
       const userChatKey = `chatHistory_${currentUserId}`
       const savedChat = localStorage.getItem(userChatKey)
-      
+
       if (savedChat) {
         try {
           const parsed = JSON.parse(savedChat)
@@ -66,7 +67,7 @@ export default function SupportBot() {
         console.log('No saved chat history for this user')
       }
     }
-    
+
     // Load intake summary from session if available
     const stored = sessionStorage.getItem('intakeSummary')
     if (stored) {
@@ -93,7 +94,7 @@ export default function SupportBot() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    
+
     // Save chat history for current user
     const currentUserId = localStorage.getItem('userId')
     if (currentUserId && messages.length > 1) { // Only save if there's more than just the initial greeting
@@ -110,10 +111,10 @@ export default function SupportBot() {
 
   const checkGroqHealth = async () => {
     try {
-      const res = await fetch('http://localhost:8001/api/support/health')
+      const res = await fetch(`${API_URL}/api/support/health`)
       const data = await res.json()
       setGroqAvailable(data.groqAvailable)
-      
+
       if (!data.groqAvailable) {
         setMessages(prev => [...prev, {
           role: 'assistant',
@@ -158,7 +159,7 @@ export default function SupportBot() {
 
       console.log('Sending request to backend:', requestBody)
 
-      const res = await fetch('http://localhost:8001/api/support/chat', {
+      const res = await fetch(`${API_URL}/api/support/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
@@ -174,12 +175,12 @@ export default function SupportBot() {
 
       const data = await res.json()
       console.log('Got response:', data)
-      
+
       const newMessages = [...messagesWithUser, {
         role: 'assistant' as const,
         content: data.reply
       }]
-      
+
       setMessages(newMessages)
 
       if (data.crisisDetected) {
@@ -190,9 +191,9 @@ export default function SupportBot() {
       saveConversation(newMessages)
     } catch (error) {
       console.error('Chat error:', error)
-      
+
       let errorMessage = `I'm having trouble responding right now.`
-      
+
       if (error instanceof Error && error.message.includes('429')) {
         errorMessage = '⏱️ Too many requests. Gemini free tier allows 15 requests per minute. Please wait about 60 seconds and try again.'
       } else if (error instanceof Error && error.message.includes('quota')) {
@@ -200,7 +201,7 @@ export default function SupportBot() {
       } else if (error instanceof Error) {
         errorMessage = `I'm having trouble responding right now. Error: ${error.message}. Please check the console for details.`
       }
-      
+
       const errorMessages = [...messagesWithUser, {
         role: 'assistant' as const,
         content: errorMessage
@@ -222,14 +223,14 @@ export default function SupportBot() {
       const conversationMessages = messagesToSave || messages
       // Get userId directly from localStorage (set by Auth.tsx)
       const actualUserId = localStorage.getItem('userId') || 'anonymous'
-      
+
       console.log('💾 Saving conversation...', {
         sessionId: intakeSummary.sessionId,
         userId: actualUserId,
         messageCount: conversationMessages.length
       })
-      
-      const response = await fetch('http://localhost:8001/api/conversations/save', {
+
+      const response = await fetch(`${API_URL}/api/conversations/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -245,7 +246,7 @@ export default function SupportBot() {
           riskLevel: intakeSummary.riskLevel
         })
       })
-      
+
       if (response.ok) {
         const result = await response.json()
         console.log('✅ Conversation saved successfully:', result)
@@ -253,7 +254,7 @@ export default function SupportBot() {
         const errorText = await response.text()
         console.error('❌ Failed to save conversation:', response.status, errorText)
       }
-      
+
       // Link conversation to user profile (if using UserContext userId)
       if (userId) {
         await linkConversation(intakeSummary.sessionId)
@@ -353,11 +354,10 @@ export default function SupportBot() {
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] p-3 rounded-2xl whitespace-pre-wrap ${
-                  msg.role === 'user'
+                className={`max-w-[85%] p-3 rounded-2xl whitespace-pre-wrap ${msg.role === 'user'
                     ? 'bg-[var(--color-primary)] text-white'
                     : 'bg-slate-100 text-slate-800'
-                }`}
+                  }`}
               >
                 {msg.content}
               </div>
@@ -413,8 +413,8 @@ export default function SupportBot() {
                 📞 Crisis help
               </button>
               <div className="flex-1" />
-              <PrimaryButton 
-                onClick={sendMessage} 
+              <PrimaryButton
+                onClick={sendMessage}
                 disabled={isTyping || !input.trim() || groqAvailable === false}
               >
                 Send

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 declare global {
   interface Window {
@@ -69,7 +70,7 @@ export default function Auth(){
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
       
-      const res = await fetch('http://localhost:8001/api/auth/google', {
+      const res = await fetch(`${API_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: response.credential }),
@@ -140,7 +141,7 @@ export default function Auth(){
     try {
       if (isLogin) {
         // Login flow (no verification needed)
-        const response = await fetch('http://localhost:8001/api/auth/email-login', {
+        const response = await fetch(`${API_URL}/api/auth/email-login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -185,7 +186,7 @@ export default function Auth(){
         nav(hasCompletedAssessment ? '/home' : '/mental-health-assessment')
       } else {
         // Signup flow - direct signup without verification
-        const response = await fetch('http://localhost:8001/api/auth/email-signup', {
+        const response = await fetch(`${API_URL}/api/auth/email-signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, name })
@@ -231,7 +232,7 @@ export default function Auth(){
     setError('')
 
     try {
-      const response = await fetch('http://localhost:8001/api/auth/verify-email', {
+      const response = await fetch(`${API_URL}/api/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code: verificationCode })

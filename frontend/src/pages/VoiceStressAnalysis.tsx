@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AnimatedCard from '../components/AnimatedCard'
 import PrimaryButton from '../components/PrimaryButton'
+import { API_URL } from '../config'
 
 interface VoiceAnalysisResult {
   stressLevel: string
@@ -56,7 +57,7 @@ export default function VoiceStressAnalysis() {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
     const arrayBuffer = await webmBlob.arrayBuffer()
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
-    
+
     // Convert to WAV format
     const wavBuffer = audioBufferToWav(audioBuffer)
     return new Blob([wavBuffer], { type: 'audio/wav' })
@@ -67,22 +68,22 @@ export default function VoiceStressAnalysis() {
     const sampleRate = audioBuffer.sampleRate
     const format = 1 // PCM
     const bitDepth = 16
-    
+
     const bytesPerSample = bitDepth / 8
     const blockAlign = numChannels * bytesPerSample
-    
+
     const data = audioBuffer.getChannelData(0)
     const dataLength = data.length * bytesPerSample
     const buffer = new ArrayBuffer(44 + dataLength)
     const view = new DataView(buffer)
-    
+
     // WAV header
     const writeString = (offset: number, string: string) => {
       for (let i = 0; i < string.length; i++) {
         view.setUint8(offset + i, string.charCodeAt(i))
       }
     }
-    
+
     writeString(0, 'RIFF')
     view.setUint32(4, 36 + dataLength, true)
     writeString(8, 'WAVE')
@@ -96,7 +97,7 @@ export default function VoiceStressAnalysis() {
     view.setUint16(34, bitDepth, true)
     writeString(36, 'data')
     view.setUint32(40, dataLength, true)
-    
+
     // Write PCM samples
     const volume = 0.8
     let offset = 44
@@ -105,38 +106,38 @@ export default function VoiceStressAnalysis() {
       view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true)
       offset += 2
     }
-    
+
     return buffer
   }
 
   const transcribeOnServer = async (audioBlob: Blob) => {
     try {
       setIsTranscribing(true)
-      
+
       // Groq Whisper supports WebM directly, no conversion needed for transcription!
       const formData = new FormData()
       formData.append('file', audioBlob, 'recording.webm')
-      
+
       console.log('📡 Transcribing with Groq Whisper...')
       const startTime = Date.now()
-      
-      const response = await fetch('http://localhost:8001/api/voice/transcribe', {
+
+      const response = await fetch(`${API_URL}/api/voice/transcribe`, {
         method: 'POST',
         body: formData
       })
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Transcription failed:', response.status, errorText)
         throw new Error(`Transcription failed: ${response.status} - ${errorText}`)
       }
-      
+
       const data = await response.json()
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
       console.log(`✅ Transcription complete in ${elapsed}s:`, data.transcript)
-      
+
       setTranscript(data.transcript || '')
-      
+
     } catch (error: any) {
       console.error('Transcription error:', error)
       setTranscript(`[Transcription failed: ${error.message || 'Unknown error'}]`)
@@ -154,7 +155,7 @@ export default function VoiceStressAnalysis() {
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaStreamRef.current = stream
-      
+
       // Set up audio analyser for visualization
       const audioContext = new AudioContext()
       const analyser = audioContext.createAnalyser()
@@ -162,7 +163,7 @@ export default function VoiceStressAnalysis() {
       source.connect(analyser)
       analyser.fftSize = 256
       analyserRef.current = analyser
-      
+
       // Start visualizing audio levels
       const updateAudioLevel = () => {
         if (analyserRef.current) {
@@ -174,7 +175,7 @@ export default function VoiceStressAnalysis() {
         }
       }
       updateAudioLevel()
-      
+
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
@@ -188,18 +189,18 @@ export default function VoiceStressAnalysis() {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
         setAudioBlob(audioBlob)
-        
+
         const url = URL.createObjectURL(audioBlob)
         setAudioURL(url)
-        
+
         stream.getTracks().forEach(track => track.stop())
-        
+
         // Stop audio visualization
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current)
         }
         setAudioLevel(0)
-        
+
         // Transcribe using Groq Whisper
         await transcribeOnServer(audioBlob)
       }
@@ -229,12 +230,12 @@ export default function VoiceStressAnalysis() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
-      
+
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
       }
-      
+
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach(track => track.stop())
       }
@@ -257,14 +258,14 @@ export default function VoiceStressAnalysis() {
 
       const formData = new FormData()
       formData.append('audio', wavBlob, 'recording.wav')
-      
+
       const token = localStorage.getItem('authToken')
       const headers: HeadersInit = {}
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const response = await fetch('http://localhost:8001/api/voice/voice', {
+      const response = await fetch(`${API_URL}/api/voice/voice`, {
         method: 'POST',
         headers,
         body: formData,
@@ -401,7 +402,7 @@ export default function VoiceStressAnalysis() {
               <div className="max-w-md mx-auto px-8">
                 <div className="mb-2 text-sm text-gray-500">Voice Intensity</div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-100"
                     style={{ width: `${audioLevel * 100}%` }}
                   />
@@ -409,10 +410,10 @@ export default function VoiceStressAnalysis() {
                 {/* Bar visualization */}
                 <div className="flex gap-1 justify-center items-end h-16 mt-4">
                   {[...Array(20)].map((_, i) => (
-                    <div 
+                    <div
                       key={i}
                       className="w-2 bg-gradient-to-t from-purple-600 to-pink-500 rounded-t transition-all duration-100"
-                      style={{ 
+                      style={{
                         height: `${Math.max(10, audioLevel * 100 * (0.5 + Math.random() * 0.5))}%`,
                         opacity: audioLevel > 0.1 ? 1 : 0.3
                       }}
@@ -445,7 +446,7 @@ export default function VoiceStressAnalysis() {
               </div>
 
               <p className="text-gray-800 font-semibold mb-4">Recording complete ({recordingTime}s)</p>
-              
+
               {isTranscribing && (
                 <div className="mb-4 bg-blue-50 rounded-lg p-4 max-w-xl mx-auto border border-blue-200">
                   <div className="flex items-center justify-center gap-2">
@@ -459,7 +460,7 @@ export default function VoiceStressAnalysis() {
                   </div>
                 </div>
               )}
-              
+
               {transcript && !isTranscribing && (
                 <div className="mb-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-5 max-w-2xl mx-auto border-2 border-green-200 shadow-lg">
                   <div className="flex items-center gap-2 mb-3">
@@ -485,7 +486,7 @@ export default function VoiceStressAnalysis() {
                   </p>
                 </div>
               )}
-              
+
               {audioURL && (
                 <div className="mb-4">
                   <audio ref={audioPlayerRef} src={audioURL} onEnded={() => setIsPlaying(false)} />
