@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function Header(){
+export default function Header() {
   const [isGuest, setIsGuest] = useState(false)
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
@@ -14,9 +14,9 @@ export default function Header(){
     const name = localStorage.getItem('userName')
     const email = localStorage.getItem('userEmail') || localStorage.getItem('userId')
     const authToken = localStorage.getItem('authToken')
-    
+
     console.log('Header loading user data:', { name, email, authToken: !!authToken })
-    
+
     setIsGuest(!authToken)
     setUserName(name || '')
     setUserEmail(email || '')
@@ -24,22 +24,22 @@ export default function Header(){
 
   useEffect(() => {
     loadUserData()
-    
+
     // Listen for storage changes (when user logs in from another tab or component updates)
     const handleStorageChange = () => {
       console.log('Storage changed, reloading user data')
       loadUserData()
     }
-    
+
     // Custom event for same-tab updates (when login happens in same tab)
     const handleUserUpdate = () => {
       console.log('User update event, reloading data')
       loadUserData()
     }
-    
+
     window.addEventListener('storage', handleStorageChange)
     window.addEventListener('userDataUpdated', handleUserUpdate)
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('userDataUpdated', handleUserUpdate)
@@ -69,14 +69,14 @@ export default function Header(){
     localStorage.removeItem('userEmail')
     localStorage.removeItem('provider')
     localStorage.removeItem('joinedDate')
-    
+
     // Clear ALL chat history (old global + all user-specific)
     Object.keys(localStorage).forEach(key => {
       if (key === 'chatHistory' || key.startsWith('chatHistory_')) {
         localStorage.removeItem(key)
       }
     })
-    
+
     setShowDropdown(false)
     nav('/')
   }
@@ -84,21 +84,21 @@ export default function Header(){
   return (
     <header className="px-4 py-3 flex items-center justify-between backdrop-blur-sm bg-white/40 sticky top-0 z-50 border-b border-white/20">
       <div className="flex items-center gap-3">
-        <motion.div 
+        <motion.div
           className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-400 to-indigo-400 flex items-center justify-center text-white font-bold shadow-md"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          A
+          S
         </motion.div>
         <div>
           <div className="text-lg font-semibold bg-gradient-to-r from-[var(--color-primary)] to-purple-500 bg-clip-text text-transparent">
-            Aurora Mind
+            Serenova
           </div>
-          <div className="text-xs text-slate-500">Safe emotional check-ins</div>
+          <div className="text-xs text-slate-500">Your Mental Wellness Companion</div>
         </div>
       </div>
-      
+
       {isGuest ? (
         <motion.button
           onClick={handleSignIn}
@@ -110,7 +110,7 @@ export default function Header(){
         </motion.button>
       ) : (
         <div className="relative" ref={dropdownRef}>
-          <motion.div 
+          <motion.div
             onClick={() => setShowDropdown(!showDropdown)}
             className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 cursor-pointer flex items-center justify-center text-white font-semibold text-sm shadow-md"
             whileHover={{ scale: 1.1 }}
