@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --anim-fast: 200ms;
+  --anim-normal: 300ms;
+  --anim-slow: 500ms;
+  --easing-standard: cubic-bezier(0.25, 0.8, 0.25, 1);
+  --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --color-primary: #6C63FF;
+  --color-warning: #FF9F9F;
+  --gradient-bg: linear-gradient(135deg, #EEF3FF 0%, #F8F5FF 100%);
+  --shadow-sm: 0 2px 8px rgba(108, 99, 255, 0.08);
+  --shadow-md: 0 4px 16px rgba(108, 99, 255, 0.12);
+  --shadow-lg: 0 8px 24px rgba(108, 99, 255, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim-fast: 0ms;
+    --anim-normal: 0ms;
+    --anim-slow: 0ms;
+  }
+}
+
+body { 
+  @apply bg-gradient-to-br from-[#EEF3FF] to-[#F8F5FF];
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+h1 { @apply text-2xl font-semibold; }
+h2 { @apply text-xl font-semibold; }
+h3 { @apply text-lg font-medium; }
+body, p { @apply text-base; }
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.primary-glow {
+  box-shadow: 0 0 20px rgba(108, 99, 255, 0.3), var(--shadow-md);
+}
+
+/* Pixel Art / Gaming UI Styles */
+.pixel-box {
+  box-shadow: 
+    2px 0 0 0 rgba(0,0,0,0.1),
+    0 2px 0 0 rgba(0,0,0,0.1),
+    2px 2px 0 0 rgba(0,0,0,0.1),
+    inset -2px -2px 0 0 rgba(0,0,0,0.05);
+}
+
+.pixel-card {
+  border-radius: 0;
+  box-shadow: 
+    4px 0 0 0 rgba(0,0,0,0.1),
+    0 4px 0 0 rgba(0,0,0,0.1),
+    4px 4px 0 0 rgba(0,0,0,0.1),
+    8px 8px 0 0 rgba(0,0,0,0.05);
+  transition: all 0.18s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.pixel-card.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    4px 0 0 0 rgba(0,0,0,0.15),
+    0 4px 0 0 rgba(0,0,0,0.15),
+    4px 4px 0 0 rgba(0,0,0,0.15),
+    8px 8px 0 0 rgba(0,0,0,0.1),
+    12px 12px 0 0 rgba(0,0,0,0.05);
+}
+
+.pixel-button {
+  border-radius: 0;
+  box-shadow: 
+    3px 0 0 0 rgba(0,0,0,0.15),
+    0 3px 0 0 rgba(0,0,0,0.15),
+    3px 3px 0 0 rgba(0,0,0,0.15);
+  transition: all 0.18s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.pixel-button:active {
+  transform: scale(0.97);
+}
+
+.pixel-text {
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.pixel-text-heading {
+  font-family: 'Quicksand', cursive;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.pulse-subtle {
+  animation: pulse-subtle 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.95;
+  }
+}
+
+@keyframes gradient-slow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-slow {
+  animation: gradient-slow 25s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-card.hover-lift:hover {
+    transform: none;
+  }
+  .pulse-subtle {
+    animation: none;
+  }
+  .animate-gradient-slow {
+    animation: none;
+  }
+}
