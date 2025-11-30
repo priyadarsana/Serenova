@@ -367,7 +367,7 @@ async def transcribe_audio(
                 
                 transcription = groq_client.audio.transcriptions.create(
                     file=(file.filename, audio_data),
-                    model="whisper-large-v3",
+                    model="whisper-large-v3-turbo",  # OPTIMIZED: 2-3x faster than whisper-large-v3
                     response_format="json",
                     language="en",  # Can be made dynamic
                     temperature=0.0
