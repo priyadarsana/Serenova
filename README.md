@@ -1,4 +1,4 @@
-# Aurora Mind — Full-Stack Emotional Wellness App
+# Serenova — Full-Stack Emotional Wellness App
 
 A beautiful, animated mental wellness app with AI-powered emotion analysis.
 
